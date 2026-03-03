@@ -11,6 +11,7 @@ FROM nginx:stable-alpine
 # On copie les fichiers compilés par React dans le dossier de Nginx
 COPY --from=build /app/dist /usr/share/nginx/html
 # Si tu utilises 'build' au lieu de 'dist' dans ton projet, remplace /app/dist par /app/build
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
