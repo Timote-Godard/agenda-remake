@@ -15,7 +15,7 @@ const MoodleDashboard = ({ moodleData, onLogout }) => {
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
                 <button 
                     onClick={onLogout} 
-                    className="border-4 border-black p-2 font-black bg-red-400 hover:bg-red-600 hover:text-white flex items-center justify-center gap-2 cursor-pointer shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all"
+                    className="border-4 border-black p-2 font-black bg-red-400 hover:bg-red-600 hover:text-white flex items-center justify-center gap-2 cursor-pointer shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] hover:translate-x-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
                 >
                     <LogOut size={18} strokeWidth={3} /> Déconnexion
                 </button>
@@ -64,7 +64,7 @@ const MoodleDashboard = ({ moodleData, onLogout }) => {
                                         href={course.url}
                                         target="_blank"
                                         rel="noreferrer"
-                                        className="w-full flex items-center justify-center gap-2 bg-pink-300 border-2 border-black py-2 font-black uppercase hover:bg-pink-400 transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none"
+                                        className="w-full flex items-center justify-center gap-2 bg-pink-300 border-2 border-black py-2 font-black uppercase hover:bg-pink-400 transition-all hover:translate-y-[-2px] hover:translate-x-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-1 active:translate-x-1 active:shadow-none"
                                     >
                                         Ouvrir <ExternalLink size={18} strokeWidth={3} />
                                     </a>

@@ -119,18 +119,46 @@ const layoutEvents = (events) => {
     return sorted;
 };
 
-const EntDashboard = ({ onBack }) => {
+const EntDashboard = ({ onBack, agenda, setAgenda, fetchMergedAgenda }) => {
     const [selectedResources, setSelectedResources] = useState(() => {
         const saved = localStorage.getItem('ent_selected_resources');
         return saved ? JSON.parse(saved) : [];
     });
 
     const [showWizard, setShowWizard] = useState(selectedResources.length === 0);
-    const [agenda, setAgenda] = useState([]);
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [now, setNow] = useState(new Date());
     const [direction, setDirection] = useState(0);
+
+    
+    const [windowSize, setWindowSize] = useState({
+        width: window.innerWidth,
+        height: window.innerHeight,
+    });
+
+    const [hourSize, setHourSize] = useState(windowSize.height/30);
+
+    useEffect(() => {
+        // Fonction de mise à jour
+        const handleResize = () => {
+        setWindowSize({
+            width: window.innerWidth,
+            height: window.innerHeight,
+        });
+        };
+
+        // Écouter l'événement de redimensionnement
+        window.addEventListener('resize', handleResize);
+
+        // Nettoyage de l'événement pour éviter les fuites de mémoire
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    useEffect(() => {
+        setHourSize(windowSize.height/19);
+
+    }, [windowSize])
 
     const [currentWeekStart, setCurrentWeekStart] = useState(() => {
         const d = new Date();
@@ -224,8 +252,8 @@ const EntDashboard = ({ onBack }) => {
         const startMinutes = (start.getHours() - START_HOUR) * 60 + start.getMinutes();
         const durationMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
 
-        const top = (startMinutes / 60) * HOUR_HEIGHT;
-        const height = (durationMinutes / 60) * HOUR_HEIGHT;
+        const top = (startMinutes / 60) * hourSize;
+        const height = (durationMinutes / 60) * hourSize;
 
         // Positionnement dynamique (Largeur réduite s'il y a des doublons)
         const numCols = course.numColumns || 1;
@@ -243,7 +271,7 @@ const EntDashboard = ({ onBack }) => {
         const h = now.getHours();
         const m = now.getMinutes();
         if (h < START_HOUR || h >= END_HOUR) return null;
-        return ((h - START_HOUR) * 60 + m) / 60 * HOUR_HEIGHT;
+        return ((h - START_HOUR) * 60 + m) / 60 * hourSize;
     }, [now]);
 
     useEffect(() => {
@@ -253,19 +281,8 @@ const EntDashboard = ({ onBack }) => {
 
     useEffect(() => {
         localStorage.setItem('ent_selected_resources', JSON.stringify(selectedResources));
-        if (selectedResources.length > 0) fetchMergedAgenda();
+        if (selectedResources.length > 0) fetchMergedAgenda(selectedResources);
     }, [selectedResources, currentWeekStart]);
-
-    const fetchMergedAgenda = async () => {
-        setLoading(true);
-        try {
-            const ids = selectedResources.map(r => r.id).join(',');
-            const res = await fetch(`/api/agenda-merged?resources=${ids}`);
-            const data = await res.json();
-            if (data.success) setAgenda(data.agenda);
-        } catch (err) { console.error(err); } 
-        finally { setLoading(false); }
-    };
 
     const slideVariants = {
         enter: (direction) => ({ x: direction > 0 ? '100%' : '-100%', opacity: 0 }),
@@ -290,7 +307,7 @@ const EntDashboard = ({ onBack }) => {
     }
 
     return (
-        <div className="p-4 min-h-screen bg-yellow-200 font-mono text-black">
+        <div className="p-4 min-h-screen bg-yellow-200 text-black">
             <div className="max-w-7xl mx-auto">
                 <header className="flex justify-between items-end border-b-8 border-black pb-4 mb-6">
                         <h1 className="text-5xl font-black uppercase italic">Agenda</h1>
@@ -299,7 +316,7 @@ const EntDashboard = ({ onBack }) => {
                         </button>
                     </header>
                 
-                <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6 ]">
+                <div className="flex flex-col md:flex-row justify-between font-mono items-center gap-4 mb-6 ]">
 
                     
 
@@ -324,14 +341,14 @@ const EntDashboard = ({ onBack }) => {
                 </div>
 
                 <div 
-                    className="relative flex overflow-hidden"
+                    className="relative flex overflow-hidden font-mono"
                     onTouchStart={handleTouchStart}
                     onTouchEnd={handleTouchEnd}
-                    style={{ minHeight: (END_HOUR - START_HOUR) * HOUR_HEIGHT }} 
+                    style={{ minHeight: (END_HOUR - START_HOUR) * hourSize }} 
                 >
                     <div className="w-12 pt-3 mr-2 sm:w-20 border-r-2 border-black flex-shrink-0 z-20">
                         {Array.from({ length: END_HOUR - START_HOUR }).map((_, i) => (
-                            <div key={i} style={{ height: HOUR_HEIGHT }} className="relative border-b border-black/5">
+                            <div key={i} style={{ height: hourSize }} className="relative border-b border-black/5">
                                 <span className="absolute -top-3 left-0 w-full text-center text-[10px] font-black">{(START_HOUR + i)}H</span>
                             </div>
                         ))}
@@ -367,7 +384,7 @@ const EntDashboard = ({ onBack }) => {
                                         <div key={day.iso} className="flex-1 mt-2 border-r-2 border-black/10 relative">
                                             
                                             {Array.from({ length: END_HOUR - START_HOUR }).map((_, i) => (
-                                                <div key={i} style={{ height: HOUR_HEIGHT, top: i * HOUR_HEIGHT }} className="absolute border-b border-black/5 w-full"></div>
+                                                <div key={i} style={{ height: hourSize, top: i * hourSize }} className="absolute border-b border-black/5 w-full"></div>
                                             ))}
 
                                             {isToday && currentTimeTop !== null && (
@@ -388,7 +405,8 @@ const EntDashboard = ({ onBack }) => {
         return (
             <div key={cIdx} 
                 style={calculateStyles(course)}
-                className={`absolute border-2 border-black p-1 sm:p-2 overflow-hidden hover:z-40 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:-translate-x-1 transition-all cursor-pointer ${theme.colorClass}`}
+                // Remplace la ligne des classes par celle-ci :
+className={`absolute border-2 border-black p-1 sm:p-2 overflow-hidden hover:z-40 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition duration-200 cursor-pointer ${theme.colorClass}`}
             >
                 {/* 🎨 L'IMAGE DE FOND EN FILIGRANE */}
                 {theme.bgImage && (
@@ -404,7 +422,7 @@ const EntDashboard = ({ onBack }) => {
                         {new Date(course.debut).getHours()}H{String(new Date(course.debut).getMinutes()).padStart(2, '0')}
                     </div>
                     
-                    <h4 className="font-black text-sm sm:text-[10px] leading-tight uppercase mb-1 break-words">
+                    <h4 className="font-black text-sm sm:text-[10px] leading-tight uppercase  break-words">
                         {course.titre}
                     </h4>
 

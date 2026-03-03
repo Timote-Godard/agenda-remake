@@ -3,9 +3,9 @@ import { CalendarDays, Dumbbell, Mail, BookOpen, LogOut } from 'lucide-react';
 import EntDashboard from './EntDashboard';
 import SiuapsDashboard from './SiuapsDashboard';
 import MailDashboard from './MailDashboard';
-import MoodleDashboard from './MoodleDashboard'; // 👈 On importe le MoodleDashboard
+import MoodleDashboard from './MoodleDashboard'; 
 
-const Hub = ({ userData, mailData, moodleData, onLogout, activeTab, setActiveTab, onNavigateToSlots, onNavigateToRegistration, activeTabSiuaps, setActiveTabSiuaps }) => {
+const Hub = ({ fetchMergedAgenda, userData, agenda, setAgenda, mailData, moodleData, onLogout, activeTab, setActiveTab, onNavigateToSlots, onNavigateToRegistration, activeTabSiuaps, setActiveTabSiuaps }) => {
     
     return (
         <div className="h-screen w-screen flex flex-col bg-[#F0F0F0] overflow-hidden selection:bg-yellow-300">
@@ -13,7 +13,7 @@ const Hub = ({ userData, mailData, moodleData, onLogout, activeTab, setActiveTab
             <div className="flex-1 overflow-y-auto md:pb-20 sm:pb-0"> 
                 
                 {activeTab === 'AGENDA' && (
-                    <EntDashboard onBack={onLogout} />
+                    <EntDashboard onBack={onLogout} agenda={agenda} setAgenda={setAgenda} fetchMergedAgenda={fetchMergedAgenda} />
                 )}
 
                 {activeTab === 'SPORT' && (

@@ -15,4 +15,14 @@ export default defineConfig({
     react(),
     tailwindcss()
   ],
+  server: {
+    proxy: {
+      // 🌟 On crée un tunnel pour que /api aille vers ton Node.js
+      '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
+  }
 })

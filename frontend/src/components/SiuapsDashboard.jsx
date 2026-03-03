@@ -10,7 +10,7 @@ const SiuapsDashboard = ({ userData, activeTab, setActiveTab, onNavigateToSlots,
     const bgButtonHover = "hover:bg-green-100 bg-white hover:cursor-pointer";
     
 
-    const bgButtonClickable = "active:text-white active:translate-y-1 active:translate-x-1 active:shadow-none hover:cursor-pointer text-black hover:bg-green-600 hover:text-white hover:translate-y-[-2px] hover:translate-x-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]";
+    const bgButtonClickable = "active:text-white active:translate-y-1 active:translate-x-1 active:shadow-none hover:cursor-pointer text-black hover:bg-green-600 transition-all hover:text-white hover:translate-y-[-2px] hover:translate-x-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]";
     const bgNavClickable = "hover:cursor-pointer text-black hover:bg-green-600 hover:text-white ";
 
     
@@ -22,7 +22,7 @@ const SiuapsDashboard = ({ userData, activeTab, setActiveTab, onNavigateToSlots,
             {/* Overlay léger pour la lisibilité si l'image est trop claire/sombre */}
             <div className="absolute pointer-events-none"></div>
 
-            <div className="relative z-10 w-full max-w-3xl p-4 font-sans animate-in fade-in duration-100">
+            <div className="flex flex-col relative z-10 w-full max-w-3xl p-4 font-sans animate-in fade-in duration-100 h-screen pb-20">
 
                 <header className="flex justify-between items-end border-b-8 border-black pb-4 mb-6">
                                         <h1 className="text-5xl font-black uppercase italic">Siuaps</h1>
@@ -35,7 +35,7 @@ const SiuapsDashboard = ({ userData, activeTab, setActiveTab, onNavigateToSlots,
                     {/* Action principale */}
                     <div className='flex flex-col bg-white p-4 border-3 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] gap-2 '>
                         <nav className="bottom-0 left-0 w-full flex justify-center z-50 border-3 border-black">
-                            <div className="w-full max-w-3xl flex h-20 md:h-16 ">
+                            <div className="w-full max-w-3xl flex h-16 md:h-16 ">
                                 {[
                                     { id: 'rdv', label: 'Agenda', icon: <ClipboardClock size={20} /> },
                                     { id: 'activites', label: 'Sports', icon: <Dumbbell size={20} /> },
@@ -57,7 +57,7 @@ const SiuapsDashboard = ({ userData, activeTab, setActiveTab, onNavigateToSlots,
                         
                         <button 
                             onClick={onNavigateToRegistration}
-                            className={`cursor-pointer bg-green-200 border-3 border-black px-4 py-3 font-bold w-full ${bgButtonClickable} transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`}
+                            className={`cursor-pointer bg-green-200 border-3 border-black px-4 py-3 font-bold w-full ${bgButtonClickable} shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`}
                         >
                             S'INSCRIRE À UNE ACTIVITÉ
                         </button>
@@ -68,7 +68,7 @@ const SiuapsDashboard = ({ userData, activeTab, setActiveTab, onNavigateToSlots,
                 
 
                 {/* CONTENU PRINCIPAL */}
-                <main className='bg-white p-6 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] md:min-h-[700px] min-h-[400px]'>
+                <main className='bg-white p-6 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex-1'>
 
                     
                     
@@ -131,7 +131,7 @@ const SiuapsDashboard = ({ userData, activeTab, setActiveTab, onNavigateToSlots,
                                         <button 
                                             // ON MET LE VRAI LIEN DU PLANNING BEAULIEU ICI
                                             onClick={() => onNavigateToSlots('/mod/scheduler/view.php?id=7140')} 
-                                            className={`${bgButtonClickable} border-2 md:transition md:duration-100 border-black p-2 md:p-4 flex-1 md:flex-none flex justify-center items-center border-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`}
+                                            className={`${bgButtonClickable} border-2 md:transition md:duration-100 border-black p-1 md:p-4 flex-1 md:flex-none flex justify-center items-center border-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`}
                                         >
                                             <span className="font-bold text-sm md:text-lg uppercase">Beaulieu</span>
                                         </button>
@@ -139,7 +139,7 @@ const SiuapsDashboard = ({ userData, activeTab, setActiveTab, onNavigateToSlots,
                                         <button 
                                             // ON MET LE VRAI LIEN DU PLANNING VILLEJEAN ICI
                                             onClick={() => onNavigateToSlots('/mod/scheduler/view.php?id=7141')} 
-                                            className={`${bgButtonClickable} border-2 md:transition md:duration-100 border-black p-2 md:p-4 flex-1 md:flex-none flex justify-center items-center border-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`}
+                                            className={`${bgButtonClickable} border-2 md:transition md:duration-100 border-black p-1 md:p-4 flex-1 md:flex-none flex justify-center items-center border-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`}
                                         >
                                             <span className="font-bold text-sm md:text-lg uppercase">Villejean</span>
                                         </button>

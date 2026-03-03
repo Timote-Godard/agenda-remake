@@ -25,7 +25,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false, // Ne crée une session QUE si l'utilisateur s'est loggé
   cookie: { 
-    secure: false, // ⚠️ À passer sur `true` le jour où ton site sera en ligne avec HTTPS
+    secure: true, // ⚠️ À passer sur `true` le jour où ton site sera en ligne avec HTTPS
     httpOnly: true, // 🛡️ MAGIE ANTI-HACKEUR : Interdit au Javascript du navigateur de lire le cookie (Protège contre le XSS)
     sameSite: 'lax', // Autorise le cookie à voyager entre localhost:5173 et localhost:5000
     maxAge: 1000 * 60 * 60 * 24 // 24h

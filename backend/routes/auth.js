@@ -68,7 +68,6 @@ router.get('/agenda-merged', async (req, res) => {
 
 router.get('/admin/scrape-resources', async (req, res) => {
     try {
-        console.log("🕵️ Démarrage de l'aspiration massive des IDs...");
 
         const targetUrl = 'https://planning.univ-rennes1.fr/direct/myplanning.jsp';
         
@@ -98,7 +97,6 @@ router.get('/admin/scrape-resources', async (req, res) => {
 
         if (resources.length > 0) {
             fs.writeFileSync('./ressources.json', JSON.stringify(resources, null, 2));
-            console.log(`✅ Extraction réussie : ${resources.length} IDs sauvegardés dans ressources.json`);
             return res.json({ success: true, count: resources.length, message: "Fichier créé !" });
         } else {
             return res.status(404).json({ success: false, message: "Aucun ID trouvé sur la page." });
@@ -143,7 +141,6 @@ router.post('/login', async (req, res) => {
     const wayfUrl = 'https://mon-espace.siuaps.univ-rennes.fr/auth/shibboleth/login.php';
     const myIdp = 'urn:mace:cru.fr:federation:univ-rennes1.fr'; 
 
-    console.log("Étape 1 : Envoi du choix de l'école (Université de Rennes)...");
     const firstResponse = await client.post(wayfUrl, new URLSearchParams({
       idp: myIdp
     }), {
@@ -171,11 +168,6 @@ router.post('/login', async (req, res) => {
         }
     });
 
-    console.log("\n--- NOUVEAU DIAGNOSTIC D'ENVOI ---");
-    console.log("URL cible :", loginActionUrl);
-    console.log("Payload nettoyé envoyé !");
-    console.log("----------------------------------\n");
-
     const loginResponse = await client.post(loginActionUrl, formData, {
       maxRedirects: 10,
       validateStatus: () => true, 
@@ -186,29 +178,11 @@ router.post('/login', async (req, res) => {
       }
     });
 
-    console.log("Code HTTP de retour du CAS :", loginResponse.status);
-
-    console.log("\n--- AUTOPSIE DU BOCAL APRÈS LOGIN ---");
-    const cookiesDansLeBocal = jar.getCookiesSync('https://sso-cas.univ-rennes.fr');
-    
-    cookiesDansLeBocal.forEach(cookie => {
-        if (cookie.key === 'TGC') {
-            console.log("🔍 COOKIE TGC TROUVÉ ! Voici sa carte d'identité :");
-            console.log(`- Domaine : ${cookie.domain}`);
-            console.log(`- Chemin (Path) : ${cookie.path}`);
-            console.log(`- Secure : ${cookie.secure}`);
-            console.log(`- HttpOnly : ${cookie.httpOnly}`);
-        }
-    });
-    console.log("-------------------------------------\n");
-
     const $final = cheerio.load(loginResponse.data);
-    const bodyText = loginResponse.data;
 
     const samlActionUrl = $final('form').attr('action');
 
     if (samlActionUrl && samlActionUrl.includes('SAML2/POST')) {
-        console.log("\nÉtape 3 : Le CAS a dit OUI ! Validation du ticket SAML vers le SIUAPS...");
         
         const samlData = new URLSearchParams();
         
@@ -231,26 +205,20 @@ router.post('/login', async (req, res) => {
         const finalBodyText = finalResponse.data;
 
         if (finalBodyText.includes('Déconnexion') || finalBodyText.includes('Mon compte') || finalBodyText.includes('Mes inscriptions')) {
-            console.log("\n🎉 VICTOIRE ! Connecté au SIUAPS !");
             
             const bocalAvantADE = jar.getCookiesSync('https://sso-cas.univ-rennes.fr');
             const tgcBackup = bocalAvantADE.find(c => c.key === 'TGC');
-            console.log(`[ENQUÊTE] TGC vivant AVANT ADE ? ${tgcBackup ? '🟢 OUI (Sauvegarde en cours...)' : '🔴 NON'}`);
 
-            console.log("🔑 Validation silencieuse de la session ADE...");
             await client.get('https://planning.univ-rennes1.fr/direct/myplanning.jsp', {
                 headers: { ...ROBOT_HEADERS }
             });
-            console.log("✅ Session ADE prête !");
 
             if (tgcBackup) {
-                console.log("🛟 RESTAURATION : ADE a tout cassé, on remet notre TGC de force !");
                 tgcBackup.path = '/'; 
                 jar.setCookieSync(tgcBackup, 'https://sso-cas.univ-rennes.fr');
             }
 
             const tgcFinal = jar.getCookiesSync('https://sso-cas.univ-rennes.fr').some(c => c.key === 'TGC');
-            console.log(`[ENQUÊTE] TGC vivant APRÈS RESTAURATION ? ${tgcFinal ? '🟢 OUI' : '🔴 NON'}\n`);
 
             const activities = [];
             const agenda = [];
@@ -299,7 +267,6 @@ router.post('/login', async (req, res) => {
                 }
             });
 
-            console.log(`Sports trouvés : ${activities.length}`);
 
             $dashboard('#rendez-vous').each((i, el) => {
                 const rawText = $dashboard(el).find('div').text().trim();
@@ -310,8 +277,6 @@ router.post('/login', async (req, res) => {
                     });
                 }
             });
-
-            console.log(`Activités trouvées : ${agenda.length}`);
 
             $dashboard('#other-teachings').each((i, el) => {
                 const linkElement = $dashboard(el).find('a');
@@ -326,18 +291,6 @@ router.post('/login', async (req, res) => {
                 }
             });
 
-            console.log(`Enseignements trouvés : ${cours.length}`);
-
-            const bocalGlobal = jar.getCookiesSync('https://sso-cas.univ-rennes.fr');
-            const tgcVivant = bocalGlobal.find(c => c.key === 'TGC');
-            
-            console.log("\n--- BILAN FIN DE LOGIN ---");
-            if (tgcVivant) {
-                console.log("🟢 Le TGC a survécu à SIUAPS et ADE. Il est prêt pour les mails !");
-            } else {
-                console.log("🔴 ASSASSINAT DÉTECTÉ : Le TGC a été tué pendant le scraping de SIUAPS ou ADE !");
-            }
-            console.log("--------------------------\n");
 
             return res.json({ 
                 success: true, 
@@ -349,12 +302,10 @@ router.post('/login', async (req, res) => {
                 } 
             });
         } else {
-            console.log("Échec à la toute dernière étape. Titre:", $dashboard('title').text());
             return res.status(401).json({ success: false, message: "Le SIUAPS a refusé le ticket d'entrée." });
         }
     }
     else {
-        console.log("Échec de connexion au CAS : Identifiants incorrects ou bloqués.");
         return res.status(401).json({ 
             success: false, 
             message: "Identifiants ENT incorrects" 
@@ -374,7 +325,6 @@ const MOODLE_FOAD_URL = 'https://foad.univ-rennes.fr';
 
 router.get('/moodle/courses', async (req, res) => {
     try {
-        console.log(`\n--- 🚀 [MOODLE] CONNEXION ET EXTRACTION DES COURS ---`);
 
         let currentUrl = 'https://foad.univ-rennes.fr/Shibboleth.sso/Login?entityID=urn%3Amace%3Acru.fr%3Afederation%3Auniv-rennes1.fr&target=https%3A%2F%2Ffoad.univ-rennes.fr%2Fauth%2Fshibboleth%2Findex.php';
         let response;
@@ -402,7 +352,6 @@ router.get('/moodle/courses', async (req, res) => {
             const samlResponse = $('input[name="SAMLResponse"]').val();
 
             if (samlResponse && formAction) {
-                console.log(`🎟️ Formulaire SAML intercepté, on passe la douane...`);
                 const formData = new URLSearchParams();
                 $('input[type="hidden"], input[type="text"]').each((_, el) => {
                     const name = $(el).attr('name');
@@ -425,7 +374,6 @@ router.get('/moodle/courses', async (req, res) => {
 
             // Arrivée sur Moodle
             if (response.status === 200) {
-                console.log(`✅ Arrivé sur Moodle !`);
                 isConnected = true;
                 break;
             }
@@ -443,10 +391,8 @@ router.get('/moodle/courses', async (req, res) => {
             return res.status(500).json({ success: false, error: "Clé de session (sesskey) introuvable." });
         }
         const sesskey = sesskeyMatch[1];
-        console.log("🗝️ Sesskey trouvée :", sesskey);
 
         // 3. L'APPEL API MAGIQUE (On demande le JSON des cours directement)
-        console.log("📡 Demande de la liste des cours à l'API interne...");
         const apiResponse = await client.post(`https://foad.univ-rennes.fr/lib/ajax/service.php?sesskey=${sesskey}`, [{
             index: 0,
             methodname: 'core_course_get_enrolled_courses_by_timeline_classification',
@@ -479,7 +425,6 @@ router.get('/moodle/courses', async (req, res) => {
             url: c.viewurl
         }));
 
-        console.log(`🎓 ${courses.length} cours extraits avec succès !`);
         res.json({ success: true, count: courses.length, courses });
 
     } catch (error) {
@@ -578,32 +523,25 @@ const purgerCookiesDomaine = (url) => {
 // -----------------------------------------------------------------
 router.get('/mails', async (req, res) => {
     try {
-        console.log("\n🚀 [MAILS] 1. Démarrage du Crawler Manuel vers Zimbra...");
 
         // 🧼 LE SECRET EST LÀ : On tue les vieux tickets SAML pour éviter la boucle infinie
         purgerCookiesDomaine('https://ident-shib.univ-rennes1.fr');
         purgerCookiesDomaine('https://sp.partage.renater.fr');
-        console.log("🧹 Mémoire SAML purgée. Le robot part propre !");
 
         let currentUrl = 'https://partage.univ-rennes1.fr/';
         let response;
         let authReussie = false;
 
         for (let i = 0; i < 30; i++) {
-            console.log(`\n[SAUT ${i + 1}] 🌐 URL : ${currentUrl.split('?')[0]}`);
-
             const bocalGlobal = jar.getCookiesSync('https://sso-cas.univ-rennes.fr');
             const tgc = bocalGlobal.find(c => c.key === 'TGC');
             
-            if (tgc) {
-                console.log(`[SAUT ${i + 1}] 🟢 TGC est VIVANT dans le bocal ! (SameSite: ${tgc.sameSite || 'Non défini'})`);
-            } else {
-                console.log(`[SAUT ${i + 1}] 🔴 ALERTE : Le TGC n'existe plus dans le bocal !`);
-            }
+            if (!tgc) {
+                return;
+            } 
 
             const cookiesForUrl = jar.getCookiesSync(currentUrl);
             const cookieNames = cookiesForUrl.map(c => c.key).join(', ') || 'AUCUN';
-            console.log(`[SAUT ${i + 1}] 🍪 Cookies autorisés pour ce saut : ${cookieNames}`);
 
             // 🎭 On enfile l'uniforme !
             const specificHeaders = { ...ROBOT_HEADERS };
@@ -619,15 +557,9 @@ router.get('/mails', async (req, res) => {
                 headers: specificHeaders
             });
 
-            console.log(`[SAUT ${i + 1}] 📥 Réponse HTTP : ${response.status}`);
-
             if (response.status >= 300 && response.status < 400 && response.headers.location) {
                 let nextUrl = response.headers.location;
                 if (!nextUrl.startsWith('http')) nextUrl = new URL(currentUrl).origin + (nextUrl.startsWith('/') ? '' : '/') + nextUrl;
-                
-                if (nextUrl.includes('/service/preauth')) {
-                    console.log(`[SAUT ${i + 1}] 💎 URL Preauth détectée ! C'est elle qui donne le token !`);
-                }
                 
                 currentUrl = nextUrl;
                 continue;
@@ -651,8 +583,6 @@ router.get('/mails', async (req, res) => {
                 
                 // On vire les doubles slashs (sauf le https://)
                 postUrl = postUrl.replace(/([^:]\/)\/+/g, "$1");
-
-                console.log(`[SAUT ${i + 1}] 🎟️ Formulaire SAML intercepté ! Tir vers : ${postUrl}`);
                 
                 const formData = new URLSearchParams();
                 $('input[type="hidden"], input[type="text"]').each((_, el) => {
@@ -674,8 +604,7 @@ router.get('/mails', async (req, res) => {
                 if (response.status >= 300 && response.status < 400 && response.headers.location) {
                     let nextUrl = response.headers.location;
                     if (!nextUrl.startsWith('http')) nextUrl = new URL(postUrl).origin + (nextUrl.startsWith('/') ? '' : '/') + nextUrl;
-                    
-                    console.log(`[SAUT ${i + 1}] ↪️ Redirection post-SAML vers : ${nextUrl}`);
+
                     currentUrl = nextUrl;
                     continue;
                 }
@@ -689,7 +618,7 @@ router.get('/mails', async (req, res) => {
             if (metaRefresh && !isAutoSubmit) {
                 const match = metaRefresh.match(/url=['"]?([^'"]+)['"]?/i);
                 if (match && match[1]) {
-                    console.log(`[SAUT ${i + 1}] 🔄 Meta-Refresh détecté vers : ${match[1].substring(0, 50)}...`);
+
                     let nextUrl = match[1];
                     if (!nextUrl.startsWith('http')) nextUrl = new URL(currentUrl).origin + (nextUrl.startsWith('/') ? '' : '/') + nextUrl;
                     currentUrl = nextUrl;
@@ -702,18 +631,16 @@ router.get('/mails', async (req, res) => {
             // =======================================================
             if (response.status === 200 && !isAutoSubmit && !metaRefresh) {
                 if ($('input[name="username"]').length > 0) {
-                    console.log(`[SAUT ${i + 1}] ❌ MUR CAS ! Le cookie TGC n'a pas été reconnu.`);
+
                     break;
                 }
                 
                 // On vérifie qu'on a bien notre récompense avant de crier victoire
                 const bocalZimbra = jar.getCookiesSync('https://partage.univ-rennes1.fr');
                 if (bocalZimbra.some(c => c.key === 'ZM_AUTH_TOKEN')) {
-                    console.log(`[SAUT ${i + 1}] ✅ Atterrissage final validé, ZM_AUTH_TOKEN en poche !`);
+
                     authReussie = true;
-                } else {
-                    console.log(`[SAUT ${i + 1}] ⚠️ Page 200 atteinte sur ${currentUrl}, mais pas de jeton Zimbra. On continue d'attendre ou c'est une impasse.`);
-                }
+                } 
                 break;
             }
         
@@ -723,14 +650,8 @@ router.get('/mails', async (req, res) => {
 
         const zimbraCookies = jar.getCookiesSync('https://partage.univ-rennes1.fr');
         if (!zimbraCookies.some(c => c.key === 'ZM_AUTH_TOKEN')) {
-            console.log("❌ JETON MANQUANT : Le ZM_AUTH_TOKEN n'a pas été trouvé dans le pot.");
             return res.status(401).json({ success: false, message: "Jeton Zimbra introuvable." });
         }
-
-        // =======================================================
-        // 3. RÉCUPÉRATION VIA L'API JSON (PAS DE TRONCATURE)
-        // =======================================================
-        console.log("💎 [MAILS] Accès à l'API JSON pour éviter les '...'");
 
         // On demande les 20 derniers messages du dossier "inbox" en JSON
         const jsonUrl = 'https://partage.univ-rennes1.fr/home/~/inbox.json?limit=20';
@@ -761,8 +682,6 @@ router.get('/mails', async (req, res) => {
             });
         }
 
-        console.log(`🏆 [MAILS] Victoire ! ${mails.length} mails complets récupérés.`);
-
         res.json({ 
             success: true, 
             unreadCount, 
@@ -778,7 +697,6 @@ router.get('/mails', async (req, res) => {
 router.get('/mail/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        console.log(`📖 [MAIL] Extraction via Vue Impression du message ID: ${id}`);
 
         // On utilise la vue Print de Zimbra (le Graal du scraping)
         const response = await client.get(`https://partage.univ-rennes1.fr/h/printmessage?id=${id}`, {
@@ -818,7 +736,6 @@ router.get('/mail/:id', async (req, res) => {
 
 router.get('/fetch-ent', async (req, res) => {
     try {
-        console.log("\n🔄 [ENT] Tentative de connexion silencieuse via le SSO...");
 
         let currentUrl = 'https://ent.univ-rennes1.fr/Login'; 
         let entResponse;
@@ -835,7 +752,6 @@ router.get('/fetch-ent', async (req, res) => {
 
             const samlActionUrl = $ent('form').attr('action');
             if (samlActionUrl && (samlActionUrl.includes('SAML2/POST') || samlActionUrl.includes('Shibboleth.sso'))) {
-                console.log("🎟️ Formulaire SAML détecté ! Validation manuelle...");
                 const samlData = new URLSearchParams();
                 $ent('input[type="hidden"]').each((_, el) => {
                     const name = $(el).attr('name');
@@ -860,10 +776,8 @@ router.get('/fetch-ent', async (req, res) => {
                     nextUrl = baseUrl + (nextUrl.startsWith('/') ? '' : '/') + nextUrl;
                 }
                 
-                console.log(`➡️ Redirection (${entResponse.status}) vers : ${nextUrl}`);
                 currentUrl = nextUrl; 
             } else {
-                console.log(`✅ Atterrissage final sur : ${currentUrl} (Status: ${entResponse.status})`);
                 break; 
             }
         }
@@ -875,11 +789,9 @@ router.get('/fetch-ent', async (req, res) => {
         const isPublicPage = html.toLowerCase().includes('identifiez-vous');
 
         if (isPublicPage && !hasLogout) {
-            console.log("❌ [ENT] Échec. On est resté sur la page publique.");
             return res.status(401).json({ success: false, message: "Le CAS n'a pas validé le ticket pour l'ENT." });
         }
 
-        console.log("🎉 [ENT] Accès accordé en silence !");
         
         const studentName = $ent('.user-name').first().text().trim() || "Étudiant(e)";
 

@@ -11,6 +11,8 @@ const App = () => {
   const [isCheckingSession, setIsCheckingSession] = useState(false);
   const [activeTab, setActiveTab] = useState('AGENDA');
   const [activeTabSiuaps, setActiveTabSiuaps] = useState("rdv");
+
+  const [agenda, setAgenda] = useState([]);
   
   const [currentStep, setCurrentStep] = useState('LOGIN'); 
   const [selectedUrl, setSelectedUrl] = useState(null);
@@ -19,12 +21,22 @@ const App = () => {
   // 🌟 Modification ici : on prépare un bel état pour Moodle
   const [moodleData, setMoodleData] = useState({ courses: [], loading: true, error: null });
 
+  const fetchMergedAgenda = async (selectedResources) => {
+        try {
+            const ids = selectedResources.map(r => r.id).join(',');
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/agenda-merged?resources=${ids}`);
+            const data = await res.json();
+            if (data.success) setAgenda(data.agenda);
+        } catch (err) { console.error(err); } 
+    };
+
   // 🌟 NOUVELLE FONCTION : Charge les données secondaires une fois connecté
   const loadBackgroundData = async () => {
+
     // 1. Chargement des Mails
     const fetchMails = async () => {
       try {
-        const res = await fetch('/api/mails', { credentials: 'include' });
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/mails`, { credentials: 'include' });
         const data = await res.json();
         if (data.success) {
           setMailData({ unreadCount: data.unreadCount, recentMails: data.recentMails, loading: false });
@@ -36,10 +48,12 @@ const App = () => {
       }
     };
 
+    
+
     // 2. Chargement de Moodle
     const fetchMoodle = async () => {
       try {
-        const res = await fetch('/api/moodle/courses', { credentials: 'include' });
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/moodle/courses`, { credentials: 'include' });
         const data = await res.json();
         if (data.success) {
           setMoodleData({ courses: data.courses, loading: false, error: null });
@@ -51,6 +65,7 @@ const App = () => {
       }
     };
 
+    await fetchMergedAgenda();
     await fetchMails();
     await fetchMoodle();
   };
@@ -61,7 +76,7 @@ const App = () => {
       setIsCheckingSession(true);
       const checkSession = async () => {
         try {
-          const res = await fetch('/api/verify');
+          const res = await fetch(`${import.meta.env.VITE_API_URL}/api/verify`);
           const data = await res.json();
 
           if (data.success) {
@@ -82,13 +97,17 @@ const App = () => {
         }
       };
       checkSession();
+
+      
+
     }
+      
   }, []);
 
 
   // ACTIONS GLOBALES
   const handleLogout = async () => {
-    await fetch('/api/logout', { method: 'POST' });
+    await fetch(`${import.meta.env.VITE_API_URL}/api/logout`, { method: 'POST' });
     setUserData(null);
     localStorage.removeItem('siuaps_data');
     // On réinitialise les états
@@ -124,6 +143,7 @@ const App = () => {
 
       {currentStep === 'HUB' && (
         <Hub 
+          fetchMergedAgenda = {fetchMergedAgenda}
           userData={userData}
           onLogout={handleLogout}
           onNavigateToSlots={(url) => { 
@@ -137,6 +157,8 @@ const App = () => {
           setActiveTab={setActiveTab}
           activeTab={activeTab}
           onNavigateToRegistration={() => setCurrentStep('SIUAPS_REGISTRATION')}
+          setAgenda={setAgenda}
+          agenda={agenda}
         />
       )}
 

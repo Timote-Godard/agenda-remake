@@ -19,7 +19,7 @@ const Validations = ({ url, onBack }) => {
     const fetchCreneaux = async (useArchive, searchMissingName = "") => {
         try {
             setLoading(true);
-            const res = await fetch('/api/validations', {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/validations`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 // credentials: 'include', // (Si tu as activé la sécurité)
@@ -178,7 +178,7 @@ const Validations = ({ url, onBack }) => {
             const specificInscription = student.inscriptions.find(ins => ins.slotId === slotId);
 
             try {
-                const res = await fetch('/api/save-attendance', {
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/save-attendance`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 

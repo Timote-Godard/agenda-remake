@@ -12,7 +12,7 @@ const MailDashboard = ({ mailData }) => {
         setSelectedMail({ ...mail, body: '' }); // On prépare l'affichage
         
         try {
-            const res = await fetch(`/api/mail/${mail.id}`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/mail/${mail.id}`, {
                 credentials: 'include'
             });
             const data = await res.json();
