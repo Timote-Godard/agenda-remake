@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Search, X, Loader2, ArrowLeft, ChevronLeft, ChevronRight, MapPin, Clock, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SetupWizard from './SetupWizard';
-import ressources from '/assets/ressources.json';
+import ressources from '../assets/ressources.json';
 
 // 🎨 1. PALETTE DE COULEURS NÉOBRUTALISTES
 // 🎨 1. PALETTE DE COULEURS NÉOBRUTALISTES
