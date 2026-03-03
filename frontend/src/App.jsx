@@ -24,7 +24,7 @@ const App = () => {
     // 1. Chargement des Mails
     const fetchMails = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/mails', { credentials: 'include' });
+        const res = await fetch('/api/mails', { credentials: 'include' });
         const data = await res.json();
         if (data.success) {
           setMailData({ unreadCount: data.unreadCount, recentMails: data.recentMails, loading: false });
@@ -39,7 +39,7 @@ const App = () => {
     // 2. Chargement de Moodle
     const fetchMoodle = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/moodle/courses', { credentials: 'include' });
+        const res = await fetch('/api/moodle/courses', { credentials: 'include' });
         const data = await res.json();
         if (data.success) {
           setMoodleData({ courses: data.courses, loading: false, error: null });
@@ -61,7 +61,7 @@ const App = () => {
       setIsCheckingSession(true);
       const checkSession = async () => {
         try {
-          const res = await fetch('http://localhost:5000/api/verify');
+          const res = await fetch('/api/verify');
           const data = await res.json();
 
           if (data.success) {
@@ -88,7 +88,7 @@ const App = () => {
 
   // ACTIONS GLOBALES
   const handleLogout = async () => {
-    await fetch('http://localhost:5000/api/logout', { method: 'POST' });
+    await fetch('/api/logout', { method: 'POST' });
     setUserData(null);
     localStorage.removeItem('siuaps_data');
     // On réinitialise les états

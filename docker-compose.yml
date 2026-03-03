@@ -8,9 +8,12 @@ services:
     depends_on:
       - frontend
       - backend
+    restart: always
 
   frontend:
     build: ./frontend
+    restart: always
 
   backend:
     build: ./backend
+    restart: always
