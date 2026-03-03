@@ -137,6 +137,8 @@ router.get('/agenda/:resourceId', async (req, res) => {
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
+
+
   try {
     const wayfUrl = 'https://mon-espace.siuaps.univ-rennes.fr/auth/shibboleth/login.php';
     const myIdp = 'urn:mace:cru.fr:federation:univ-rennes1.fr'; 
@@ -204,7 +206,6 @@ router.post('/login', async (req, res) => {
     const bodyText = loginResponse.data;
 
     const samlActionUrl = $final('form').attr('action');
-    
 
     if (samlActionUrl && samlActionUrl.includes('SAML2/POST')) {
         console.log("\nÉtape 3 : Le CAS a dit OUI ! Validation du ticket SAML vers le SIUAPS...");
@@ -356,8 +357,7 @@ router.post('/login', async (req, res) => {
         console.log("Échec de connexion au CAS : Identifiants incorrects ou bloqués.");
         return res.status(401).json({ 
             success: false, 
-            message: "Identifiants ENT incorrects",
-            erreur:  samlActionUrl
+            message: "Identifiants ENT incorrects" 
         });
     }
   } catch (error) {
