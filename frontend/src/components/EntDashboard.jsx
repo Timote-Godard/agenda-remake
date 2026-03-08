@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Search, X, Loader2, ArrowLeft, ChevronLeft, ChevronRight, MapPin, Clock, Settings } from 'lucide-react';
+import { ChevronLeft, ChevronRight, MapPin, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SetupWizard from './SetupWizard';
 import ressources from '../assets/ressources.json';
 
-// 🎨 1. PALETTE DE COULEURS NÉOBRUTALISTES
 // 🎨 1. PALETTE DE COULEURS NÉOBRUTALISTES
 const NEO_COLORS = [
     'bg-pink-300', 'bg-cyan-300', 'bg-green-400', 'bg-purple-300',
@@ -12,12 +11,10 @@ const NEO_COLORS = [
 ];
 
 // 🛠️ 2. DICTIONNAIRE DE CUSTOMISATION DES COURS
-// Ajoute tes mots-clés (en minuscules) et l'URL de l'image correspondante
 const COURSE_RULES = [
     {
         keywords: ['ts', 'typescript'],
         bgImage: 'url("https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg")',
-        // bgImage: 'url("src/assets/edna.png")',
         color: 'bg-blue-400'
     },
     {
@@ -27,12 +24,12 @@ const COURSE_RULES = [
     },
     {
         keywords: ['sport', 'eps', 'siuaps'],
-        bgImage: 'url("https://cdn-icons-png.flaticon.com/512/553/553823.png")', // Icône d'haltère
+        bgImage: 'url("https://cdn-icons-png.flaticon.com/512/553/553823.png")', 
         color: 'bg-green-400'
     },
     {
         keywords: ['math', 'analyse', 'algèbre'],
-        bgImage: 'url("https://cdn-icons-png.flaticon.com/512/1046/1046229.png")', // Icône math
+        bgImage: 'url("https://cdn-icons-png.flaticon.com/512/1046/1046229.png")', 
         color: 'bg-red-300'
     }
 ];
@@ -43,14 +40,12 @@ const getCourseTheme = (title) => {
     
     const lowerTitle = title.toLowerCase();
 
-    // 1. On cherche si le titre matche avec une de nos règles custom
     for (let rule of COURSE_RULES) {
         if (rule.keywords.some(kw => lowerTitle.includes(kw))) {
             return { colorClass: rule.color, bgImage: rule.bgImage };
         }
     }
 
-    // 2. Si aucune règle ne correspond, on génère une couleur aléatoire (ton ancien système)
     const coreTitle = title.split(' ')[0].toLowerCase(); 
     let hash = 0;
     for (let i = 0; i < coreTitle.length; i++) {
@@ -60,14 +55,12 @@ const getCourseTheme = (title) => {
     return { colorClass: NEO_COLORS[index], bgImage: null };
 };
 
-// 🧠 NOUVEAU : Algorithme de calcul des chevauchements de cours
+// 🧠 Algorithme de calcul des chevauchements de cours
 const layoutEvents = (events) => {
     if (!events || events.length === 0) return [];
     
-    // 1. Trier les événements par heure de début
     const sorted = [...events].sort((a, b) => new Date(a.debut) - new Date(b.debut));
     
-    // 2. Grouper les événements qui se chevauchent
     let lastEventEnding = null;
     const groups = [];
     let currentGroup = [];
@@ -77,7 +70,6 @@ const layoutEvents = (events) => {
         const end = new Date(ev.fin);
 
         if (lastEventEnding !== null && start >= lastEventEnding) {
-            // Pas de chevauchement avec le groupe précédent, on boucle
             groups.push(currentGroup);
             currentGroup = [];
             lastEventEnding = null;
@@ -90,7 +82,6 @@ const layoutEvents = (events) => {
     });
     if (currentGroup.length > 0) groups.push(currentGroup);
 
-    // 3. Assigner des colonnes (gauche/droite) dans chaque groupe
     groups.forEach(group => {
         let columns = [];
         group.forEach(ev => {
@@ -112,14 +103,14 @@ const layoutEvents = (events) => {
 
         const numColumns = columns.length;
         group.forEach(ev => {
-            ev.numColumns = numColumns; // Nombre total de colonnes pour ce créneau
+            ev.numColumns = numColumns;
         });
     });
 
     return sorted;
 };
 
-const EntDashboard = ({ onBack, agenda, setAgenda, fetchMergedAgenda }) => {
+const EntDashboard = ({ agenda, fetchMergedAgenda }) => {
     const [selectedResources, setSelectedResources] = useState(() => {
         const saved = localStorage.getItem('ent_selected_resources');
         return saved ? JSON.parse(saved) : [];
@@ -127,11 +118,9 @@ const EntDashboard = ({ onBack, agenda, setAgenda, fetchMergedAgenda }) => {
 
     const [showWizard, setShowWizard] = useState(selectedResources.length === 0);
     const [loading, setLoading] = useState(false);
-    const [searchTerm, setSearchTerm] = useState("");
     const [now, setNow] = useState(new Date());
     const [direction, setDirection] = useState(0);
 
-    
     const [windowSize, setWindowSize] = useState({
         width: window.innerWidth,
         height: window.innerHeight,
@@ -140,7 +129,6 @@ const EntDashboard = ({ onBack, agenda, setAgenda, fetchMergedAgenda }) => {
     const [hourSize, setHourSize] = useState(windowSize.height/30);
 
     useEffect(() => {
-        // Fonction de mise à jour
         const handleResize = () => {
         setWindowSize({
             width: window.innerWidth,
@@ -148,16 +136,12 @@ const EntDashboard = ({ onBack, agenda, setAgenda, fetchMergedAgenda }) => {
         });
         };
 
-        // Écouter l'événement de redimensionnement
         window.addEventListener('resize', handleResize);
-
-        // Nettoyage de l'événement pour éviter les fuites de mémoire
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
     useEffect(() => {
         setHourSize(windowSize.height/19);
-
     }, [windowSize])
 
     const [currentWeekStart, setCurrentWeekStart] = useState(() => {
@@ -181,7 +165,6 @@ const EntDashboard = ({ onBack, agenda, setAgenda, fetchMergedAgenda }) => {
 
     const START_HOUR = 8;
     const END_HOUR = 21;
-    const HOUR_HEIGHT = 60; 
     const touchStartX = useRef(null);
 
     const goToNext = () => {
@@ -243,7 +226,6 @@ const EntDashboard = ({ onBack, agenda, setAgenda, fetchMergedAgenda }) => {
         });
     }, [currentWeekStart]);
 
-    // 🌟 MISE À JOUR : calculateStyles utilise la nouvelle structure calculée !
     const calculateStyles = (course) => {
         const start = new Date(course.debut);
         const end = new Date(course.fin);
@@ -255,7 +237,6 @@ const EntDashboard = ({ onBack, agenda, setAgenda, fetchMergedAgenda }) => {
         const top = (startMinutes / 60) * hourSize;
         const height = (durationMinutes / 60) * hourSize;
 
-        // Positionnement dynamique (Largeur réduite s'il y a des doublons)
         const numCols = course.numColumns || 1;
         const colIdx = course.column || 0;
 
@@ -263,7 +244,7 @@ const EntDashboard = ({ onBack, agenda, setAgenda, fetchMergedAgenda }) => {
             top: `${top}px`,
             height: `${height}px`,
             left: `calc(${(colIdx / numCols) * 100}% + 4px)`,
-            width: `calc(${100 / numCols}% - 12px)`, // On laisse 12px pour l'ombre du néobrutalisme
+            width: `calc(${100 / numCols}% - 12px)`, 
         };
     };
 
@@ -276,13 +257,14 @@ const EntDashboard = ({ onBack, agenda, setAgenda, fetchMergedAgenda }) => {
 
     useEffect(() => {
         const timer = setInterval(() => setNow(new Date()), 60000);
+        fetchMergedAgenda(selectedResources);
         return () => clearInterval(timer);
     }, []);
 
     useEffect(() => {
         localStorage.setItem('ent_selected_resources', JSON.stringify(selectedResources));
         if (selectedResources.length > 0) fetchMergedAgenda(selectedResources);
-    }, [selectedResources, currentWeekStart]);
+    }, [selectedResources]);
 
     const slideVariants = {
         enter: (direction) => ({ x: direction > 0 ? '100%' : '-100%', opacity: 0 }),
@@ -300,7 +282,6 @@ const EntDashboard = ({ onBack, agenda, setAgenda, fetchMergedAgenda }) => {
                 onComplete={handleSetupComplete}
                 onClose={() => {
                     if (selectedResources.length > 0) setShowWizard(false);
-                    else onBack(); 
                 }}
             />
         );
@@ -316,10 +297,7 @@ const EntDashboard = ({ onBack, agenda, setAgenda, fetchMergedAgenda }) => {
                         </button>
                     </header>
                 
-                <div className="flex flex-col md:flex-row justify-between font-mono items-center gap-4 mb-6 ]">
-
-                    
-
+                <div className="flex flex-col md:flex-row justify-between font-mono items-center gap-4 mb-6">
                     <div className="flex items-center gap-4">
                         <button onClick={goToPrev} className="bg-white border-3 border-black p-1 hover:translate-y-[-2px] hover:text-white hover:translate-x-[-2px] cursor-pointer hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-400 active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"><ChevronLeft size={24} /></button>
                         
@@ -337,7 +315,6 @@ const EntDashboard = ({ onBack, agenda, setAgenda, fetchMergedAgenda }) => {
 
                         <button onClick={goToNext} className="bg-white border-3 border-black p-1 hover:translate-y-[-2px] hover:text-white hover:translate-x-[-2px] cursor-pointer hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-400 active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"><ChevronRight size={24} /></button>
                     </div>
-
                 </div>
 
                 <div 
@@ -372,11 +349,9 @@ const EntDashboard = ({ onBack, agenda, setAgenda, fetchMergedAgenda }) => {
 
                                     const dayEvents = agenda.filter(e => {
                                         const d = new Date(e.debut);
-                                        return d.toLocaleDateString('en-CA') === day.iso && 
-                                               e.titre.toLowerCase().includes(searchTerm.toLowerCase());
+                                        return d.toLocaleDateString('en-CA') === day.iso;
                                     });
                                     
-                                    // 🚀 ON PASSE NOS EVENEMENTS DANS L'ALGORITHME DE CHEVAUCHEMENT !
                                     const laidOutEvents = layoutEvents(dayEvents);
                                     const isToday = new Date().toLocaleDateString('en-CA') === day.iso;
 
@@ -396,19 +371,15 @@ const EntDashboard = ({ onBack, agenda, setAgenda, fetchMergedAgenda }) => {
                                                 </div>
                                             )}
 
-                                            {/* RENDU DES COURS ABSOLUS */}
                                             {loading ? "" : 
     laidOutEvents.map((course, cIdx) => {
-        // 🌟 On récupère le thème (couleur + image éventuelle)
         const theme = getCourseTheme(course.titre);
 
         return (
             <div key={cIdx} 
                 style={calculateStyles(course)}
-                // Remplace la ligne des classes par celle-ci :
 className={`absolute border-2 border-black p-1 sm:p-2 overflow-hidden hover:z-40 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition duration-200 cursor-pointer ${theme.colorClass}`}
             >
-                {/* 🎨 L'IMAGE DE FOND EN FILIGRANE */}
                 {theme.bgImage && (
                     <div 
                         className="absolute bottom-[-10px] right-[-10px] w-16 h-16 opacity-30 -rotate-12 bg-no-repeat bg-contain bg-center pointer-events-none"
@@ -416,7 +387,6 @@ className={`absolute border-2 border-black p-1 sm:p-2 overflow-hidden hover:z-40
                     />
                 )}
 
-                {/* 📝 LE CONTENU (Au dessus de l'image grâce au z-10) */}
                 <div className="relative z-10 flex flex-col h-full pointer-events-none">
                     <div className="bg-black text-white text-[8px] px-1 font-bold w-fit mb-1">
                         {new Date(course.debut).getHours()}H{String(new Date(course.debut).getMinutes()).padStart(2, '0')}
@@ -438,8 +408,6 @@ className={`absolute border-2 border-black p-1 sm:p-2 overflow-hidden hover:z-40
                             </div>
                         ))}
                     </div>
-
-                     
                 </div>
             </div>
         );

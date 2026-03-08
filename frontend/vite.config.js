@@ -17,10 +17,11 @@ export default defineConfig({
   ],
   server: {
     proxy: {
-      // 🌟 On crée un tunnel pour que /api aille vers ton Node.js
-      '/api': {
-        target: 'http://localhost:5000',
+      // 🌟 Tunnel pour l'agenda universitaire (évite CORS en local)
+      '/univ-api': {
+        target: 'https://planning.univ-rennes1.fr',
         changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/univ-api/, ''),
         secure: false,
       }
     }
