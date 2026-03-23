@@ -24,10 +24,8 @@ const App = () => {
       const firstDateString = pastDate.toISOString().split('T')[0];
       
       // On utilise le proxy en dev (/univ-api) et l'URL complète sur mobile
-      const baseUrl = window.location.hostname === 'localhost' 
-        ? '/univ-api/jsp/custom/modules/plannings/anonymous_cal.jsp'
-        : 'https://planning.univ-rennes1.fr/jsp/custom/modules/plannings/anonymous_cal.jsp';
-      
+      const baseUrl = '/univ-api/jsp/custom/modules/plannings/anonymous_cal.jsp';
+
       const fullUrl = `${baseUrl}?resources=${ids}&projectId=1&calType=ical&firstDate=${firstDateString}&nbWeeks=12`;
 
       // On utilise directement fetch
