@@ -4,6 +4,7 @@ import ICAL from 'ical.js';
 
 const App = () => {
   const [agenda, setAgenda] = useState([]);
+  const [affichageEntier, setAffichageEntier] = useState(false);
 
   const fetchMergedAgenda = async (selectedResources) => {
     try {
@@ -14,6 +15,7 @@ const App = () => {
       if (cachedData) {
         setAgenda(JSON.parse(cachedData)); // Bam, affichage instantané !
       }
+
 
       const pastDate = new Date();
       pastDate.setDate(pastDate.getDate() - 30);
