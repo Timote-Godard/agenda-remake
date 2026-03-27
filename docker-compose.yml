@@ -8,6 +8,9 @@ services:
     depends_on:
       - frontend
     restart: always
+    labels:
+      - "dashboard.name=Agenda"
+      - "dashboard.url=https://ent.timote.ovh"
 
   frontend:
     build: ./frontend
