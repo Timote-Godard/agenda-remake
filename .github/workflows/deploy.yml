@@ -1,21 +1,17 @@
-name: Deploy Dashboard
-on: [push]
+name: Deploy to Home Server
+
+on:
+  push:
+    branches: [ main ] # Se déclenche quand tu push sur la branche main
 
 jobs:
   deploy:
-    runs-on: self-hosted # Ton vieux PC
+    runs-on: self-hosted # <--- C'est ici que tu appelles ton vieux PC
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout du code
+        uses: actions/checkout@v4
 
-      - name: 🔐 Create .env
+      - name: Lancement de l'application
         run: |
-          echo "MEROSS_IP=${{ secrets.MEROSS_IP }}" > .env
-          echo "MEROSS_UUID=${{ secrets.MEROSS_UUID }}" >> .env
-          echo "MEROSS_KEY=${{ secrets.MEROSS_KEY }}" >> .env
-
-      - name: 🐳 Docker Build & Run
-        run: |
-          docker stop dashboard-api || true
-          docker rm dashboard-api || true
-          docker build -t dashboard-api .
-          docker run -d --name dashboard-api -p 8085:8085 --restart always --env-file .env dashboard-api
+          docker compose up -d --build
+          docker image prune -f # Supprime les vieilles versions pour ne pas saturer le disque
