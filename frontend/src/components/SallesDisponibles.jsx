@@ -6,18 +6,18 @@ const SallesDisponibles = ({retourEDT}) => {
   const [chargement, setChargement] = useState(false);
 
   const listeSallesRaw = [
-  { nom: "B41-001", id: "5571" },
-  { nom: "B41-002", id: "5572" },
-  { nom: "B41-003", id: "5573" },
-  { nom: "B41-004", id: "5574" },
-  { nom: "B41-101", id: "5577" },
-  { nom: "B41-102", id: "5578" },
-  { nom: "B41-103", id: "5579" },
-  { nom: "B41-104", id: "5580" },
-  { nom: "B42-Amphi N", id: "148" },
-  { nom: "B42-Amphi M", id: "147" },
-  { nom: "B42-Amphi L", id: "146" }
-];
+    { nom: "B41-001", id: "22873" },
+    { nom: "B41-002", id: "22874" },
+    { nom: "B41-003", id: "22875" },
+    { nom: "B41-004", id: "22876" },
+    { nom: "B41-101", id: "22877" },
+    { nom: "B41-102", id: "22878" },
+    { nom: "B41-103", id: "22879" },
+    { nom: "B41-104", id: "22880" },
+    { nom: "B42-Amphi N", id: "22888" },
+    { nom: "B42-Amphi M", id: "22887" },
+    { nom: "B42-Amphi L", id: "22886" }
+  ];
 
   useEffect(() => {
     const analyserSalles = async () => {
@@ -79,12 +79,12 @@ const SallesDisponibles = ({retourEDT}) => {
 
             if (dispoA >= finDeJournee) {
                 message = "Pas dispo aujourd'hui";
-                css = "bg-red-50 border-red-200 text-red-700";
+                css = "bg-red-50 border-red-700 text-red-700";
             } else {
                 const h = dispoA.getHours();
                 const m = dispoA.getMinutes().toString().padStart(2, '0');
                 message = `Occupée, dispo à ${h}h${m}`;
-                css = "bg-orange-50 border-orange-200 text-orange-700";
+                css = "bg-orange-50 border-orange-700 text-orange-700";
             }
 
             } else {
@@ -96,12 +96,12 @@ const SallesDisponibles = ({retourEDT}) => {
                 const h = prochainCours.start.getHours();
                 const m = prochainCours.start.getMinutes().toString().padStart(2, '0');
                 message = `Disponible jusqu'à ${h}h${m}`;
-                css = "bg-green-50 border-green-200 text-green-700";
+                css = "bg-green-50 text-green-700";
             } else {
                 const h = finDeJournee.getHours();
                 const m = finDeJournee.getMinutes().toString().padStart(2, '0');
                 message = `Disponible jusqu'à ${h}h${m}`; // Ou "Disponible tout le reste de la journée"
-                css = "bg-green-50 border-green-200 text-green-700";
+                css = "bg-green-50 text-green-700";
             }
             }
 
@@ -123,12 +123,13 @@ const SallesDisponibles = ({retourEDT}) => {
 
   return (
     <div className="p-4">
-        <button onClick={() => retourEDT()} className="relative right-0 top-0 border-2 border-black p-2 bg-white hover:bg-black hover:translate-y-[-2px] hover:translate-x-[-2px] cursor-pointer hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-400 hover:text-white cursor-pointer shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1 transition-all">
-            Salut
-        </button>
+        
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold text-gray-800">Salles de cours (B41/B42)</h2>
-        <button onClick={() => window.location.reload()} className="text-sm bg-gray-100 px-3 py-1 rounded">Actualiser</button>
+        
+        <button onClick={() => retourEDT()} className="relative right-0 top-0 border-2 border-black p-2 bg-white hover:bg-black hover:translate-y-[-2px] hover:translate-x-[-2px] cursor-pointer hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-400 hover:text-white cursor-pointer shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1 transition-all">
+            Retour
+        </button>
+        <button onClick={() => window.location.reload()} className="relative right-0 top-0 border-2 border-black p-2 bg-white hover:bg-black hover:translate-y-[-2px] hover:translate-x-[-2px] cursor-pointer hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-400 hover:text-white cursor-pointer shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1 transition-all">Actualiser</button>
       </div>
 
       {chargement ? (
@@ -136,7 +137,7 @@ const SallesDisponibles = ({retourEDT}) => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {sallesStatus.map((salle, i) => (
-            <div key={i} className={`p-4 rounded-xl border-2 ${salle.css} flex justify-between items-center`}>
+            <div key={i} className={`p-4 border-2 border-black ${salle.css} shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex justify-between items-center`}>
               <span className="font-bold">{salle.nom}</span>
               <span className="text-sm font-medium">{salle.message}</span>
             </div>
