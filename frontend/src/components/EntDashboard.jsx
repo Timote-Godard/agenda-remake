@@ -110,7 +110,7 @@ const layoutEvents = (events) => {
     return sorted;
 };
 
-const EntDashboard = ({ agenda, fetchMergedAgenda }) => {
+const EntDashboard = ({ agenda, fetchMergedAgenda, modeSallesDispo }) => {
     const [selectedResources, setSelectedResources] = useState(() => {
         const saved = localStorage.getItem('ent_selected_resources');
         return saved ? JSON.parse(saved) : [];
@@ -294,6 +294,9 @@ const EntDashboard = ({ agenda, fetchMergedAgenda }) => {
                         <h1 className="text-5xl font-black uppercase italic">Agenda</h1>
                         <button onClick={() => setShowWizard(true)} className="relative right-0 top-0 border-2 border-black p-2 bg-white hover:bg-black hover:translate-y-[-2px] hover:translate-x-[-2px] cursor-pointer hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-400 hover:text-white cursor-pointer shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1 transition-all">
                             <Settings size={18} />
+                        </button>
+                        <button onClick={() => modeSallesDispo()} className="relative right-0 top-0 border-2 border-black p-2 bg-white hover:bg-black hover:translate-y-[-2px] hover:translate-x-[-2px] cursor-pointer hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-400 hover:text-white cursor-pointer shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1 transition-all">
+                            <MapPin size={18} />
                         </button>
                     </header>
                 

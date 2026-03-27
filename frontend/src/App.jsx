@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
 import EntDashboard from './components/EntDashboard';
+import SallesDisponibles from './components/SallesDisponibles'; 
 import ICAL from 'ical.js';
 
 const App = () => {
   const [agenda, setAgenda] = useState([]);
   const [affichageEntier, setAffichageEntier] = useState(false);
+  
+  // NOUVEAU : État pour gérer la page affichée
+  const [vueActuelle, setVueActuelle] = useState('edt'); 
 
+  // (Ta fonction fetchMergedAgenda reste exactement la même)
   const fetchMergedAgenda = async (selectedResources) => {
     try {
       const ids = selectedResources.map(r => r.id).join(',');
@@ -77,12 +82,22 @@ const App = () => {
 
   return (
     <div className="app-container bg-white min-h-screen">
-      <EntDashboard 
-        agenda={agenda} 
-        setAgenda={setAgenda} 
-        fetchMergedAgenda={fetchMergedAgenda} 
-        onBack={() => {}} 
-      />
+
+      {/* Rendu conditionnel selon la vue */}
+      <main>
+        {vueActuelle === 'edt' ? (
+          <EntDashboard 
+            agenda={agenda} 
+            setAgenda={setAgenda} 
+            fetchMergedAgenda={fetchMergedAgenda} 
+            onBack={() => {}} 
+            modeSallesDispo={() => setVueActuelle("salles")}
+          />
+        ) : (
+          <SallesDisponibles retourEDT={() => setVueActuelle("edt")}/>
+        )}
+      </main>
+
     </div>
   );
 };
